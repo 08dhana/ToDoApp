@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Todo List</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <style>
+        .badge-pending { background-color: #f0ad4e; }
+        .badge-done { background-color: #5cb85c; }
+    </style>
+    <script>
+        function confirmDelete(form) {
+            if (confirm('Are you sure you want to delete this todo?')) { form.submit(); }
+        }
+    </script>
+</head>
+<body>
+<nav class="navbar navbar-expand-lg navbar-light bg-light">
+  <a class="navbar-brand" href="/">ToDoApp</a>
+  <div class="collapse navbar-collapse">
+    <ul class="navbar-nav mr-auto">
+      <li class="nav-item"><a class="nav-link" href="/todos">Todos</a></li>
+    </ul>
+  </div>
+</nav>
+
+<div class="container mt-4">
+
+    <div th:if="${error}" class="alert alert-danger" th:text="${error}"></div>
+    <div th:if="${success}" class="alert alert-success" th:text="${success}"></div>
+
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h2 class="mb-0">Todo List</h2>
+        <a th:href="@{/todos/new}" class="btn btn-primary">Add New Todo</a>
+    </div>
+
+    <div class="btn-group mb-3" role="group" aria-label="filters">
+        <a th:href="@{/todos(filter='all')}" th:classappend="${filter == 'all'} ? ' btn-primary' : ' btn-outline-primary'" class="btn">All</a>
+        <a th:href="@{/todos(filter='pending')}" th:classappend="${filter == 'pending'} ? ' btn-primary' : ' btn-outline-primary'" class="btn">Pending</a>
+        <a th:href="@{/todos(filter='done')}" th:classappend="${filter == 'done'} ? ' btn-primary' : ' btn-outline-primary'" class="btn">Done</a>
+    </div>
+
+    <table class="table table-hover">
+        <thead class="thead-light">
+            <tr>
+                <th>Title</th>
+                <th>Description</th>
+                <th>Created</th>
+                <th>Status</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr th:each="todo : ${todos}">
+                <td th:text="${todo.title}"></td>
+                <td th:text="${todo.description}"></td>
+                <td th:text="${#temporals.format(todo.createdAt, 'yyyy-MM-dd HH:mm')}"></td>
+                <td>
+                    <span th:classappend="${todo.status.name() == 'PENDING'} ? 'badge badge-pending' : 'badge badge-done'" class="badge" th:text="${todo.status}"></span>
+                </td>
+                <td>
+                    <a th:href="@{/todos/edit/{id}(id=${todo.id})}" class="btn btn-sm btn-outline-warning">Edit</a>
+
+                    <form th:action="@{/todos/done/{id}(id=${todo.id})}" method="post" th:if="${todo.status.name() == 'PENDING'}" style="display:inline-block">
+                        <input type="hidden" name="filter" th:value="${filter}" />
+                        <button type="submit" class="btn btn-sm btn-success">Mark Done</button>
+                    </form>
+
+                    <form th:action="@{/todos/delete/{id}(id=${todo.id})}" method="post" style="display:inline-block" onsubmit="event.preventDefault(); confirmDelete(this);">
+                        <input type="hidden" name="filter" th:value="${filter}" />
+                        <button type="submit" class="btn btn-sm btn-outline-danger">Delete</button>
+                    </form>
+                </td>
+            </tr>
+            <tr th:if="${#lists.isEmpty(todos)}">
+                <td colspan="5" class="text-center">No todos found.</td>
+            </tr>
+        </tbody>
+    </table>
+
+</div>
+
+</body>
+</html>
